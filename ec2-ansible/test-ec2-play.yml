@@ -1,0 +1,27 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  tasks:
+
+    - name: Provision a set of instances
+      ec2:
+         key_name: my_key
+         group: Anisible-sg
+         instance_type: t2.micro
+         image: ami-0e2ff28bfb72a4e45
+         wait: true
+         region: us-east-1
+         exact_count: 1
+         count_tag:
+            Name: Demo
+         instance_tags:
+            Name: Demo
+      register: ec2_info
+
+    - debug:
+            msg: "{{ec2_info}}"
+
+    - debug:
+            msg: "Login to instance with IP: {{ec2_info.tagged_instances[0].public_ip}}"
+

@@ -1,0 +1,75 @@
+---
+- name: Setup atprofile Stack
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+          - atpro_stack_vars/cloudvars
+  
+  tasks:
+      - name: Create atprofile ec2 key
+        ec2_key:
+          name: atprofile-stack-key
+          region: "{{region}}"
+       
+        register: atpro_key_info
+
+      - copy:
+           content: "{{atpro_key_info.key.private_key}}"
+           dest: "./loging_key_atprofile.pem"
+           mode: 0600
+        when: atpro_key_info.changed
+
+      - name: create Security group for atprofile Stack
+        ec2_group:
+           name: atpro_stack_sg
+           description: Allow port 22 from everywhere and all port within sg
+           region: "{{region}}"
+           rules:
+             - proto: tcp
+               from_port: 80
+               to_port: 80
+               cidr_ip: 0.0.0.0/0
+             - proto: tcp
+               from_port: 22
+               to_port: 22
+               cidr_ip: "{{myip}}"
+             - proto: tcp
+               from_port: 8080
+               to_port: 8080
+               cidr_ip: "{{myip}}"
+             - proto: tcp
+               from_port: 3306
+               to_port: 3306
+               cidr_ip: "{{myip}}"
+        register: atprostackSG
+
+      - name: create Security group for atprofile Stack
+        ec2_group:
+           name: atpro_stack_sg
+           description: Allow port 22 from everywhere and all port within sg
+           region: "{{region}}"
+           rules:
+             - proto: tcp
+               from_port: 80
+               to_port: 80
+               cidr_ip: 0.0.0.0/0
+             - proto: tcp
+               from_port: 22
+               to_port: 22
+               cidr_ip: "{{myip}}"
+             - proto: tcp
+               from_port: 8080
+               to_port: 8080
+               cidr_ip: "{{myip}}"
+             - proto: tcp
+               from_port: 3306
+               to_port: 3306
+               cidr_ip: "{{myip}}"
+             - proto: all
+               group_id: "{{atprostackSG.group_id}}"
+        register: atprostackSG
+      - debug:
+          msg: "{{atprostackSG}}"
+
+
